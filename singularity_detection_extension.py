@@ -23,7 +23,6 @@ from isaacsim.examples.interactive.user_examples import SingularityDetect
 import omni.ui as ui
 import numpy as np
 import omni.kit.app
-
 class DetectionExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
         self.example_name = "Awesome Example"
@@ -149,6 +148,7 @@ class DetectionUI(BaseSampleUITemplate):
     def on_shutdown(self):
         if hasattr(self, "_update_sub"):
             self._update_sub = None
+
 
 
 
