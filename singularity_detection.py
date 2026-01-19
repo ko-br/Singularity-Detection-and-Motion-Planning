@@ -67,3 +67,4 @@ class SingularityDetect(BaseSample):
     
    
 
+
