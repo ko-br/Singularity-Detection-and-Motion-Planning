@@ -1,0 +1,1 @@
+# Singularity-Detection-and-Motion-Planning
