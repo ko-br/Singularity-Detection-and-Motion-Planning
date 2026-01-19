@@ -3,8 +3,7 @@ from isaacsim.examples.interactive.base_sample import BaseSample
 import isaacsim.core.experimental.utils.stage as stage_utils
 from isaacsim.storage.native import get_assets_root_path
 from isaacsim.core.experimental.prims import Articulation, RigidPrim
-import numpy as np
-#import roboticstoolbox as rtb
+
 
 class SingularityDetect(BaseSample):
     def __init__(self):
@@ -14,7 +13,6 @@ class SingularityDetect(BaseSample):
         self.joint_positions = None
         self.ee_link = None
         self.jacobian = None
-        manipulability_index = 0.0
 
     def setup_scene(self):
         world = self.get_world()
@@ -28,7 +26,6 @@ class SingularityDetect(BaseSample):
             path=self._robot_path,
             variants=[("Gripper", "Short_Suction")],
         )
-        
 
     async def setup_post_load(self):
         self.ur10 = Articulation(self._robot_path)
@@ -45,25 +42,6 @@ class SingularityDetect(BaseSample):
             return
 
         self.joint_positions = self.ur10.get_dof_positions().numpy()
-        
-        J = self.ur10.get_jacobian_matrices().numpy()  # returns 6xN Jacobian for end-effector
-        ee_idx = self.ur10.get_link_indices("ee_link").list()[0]
-        J2 = J[:, ee_idx - 1, :, :6]
-        
-        if J2.ndim == 3:
-            J2 = J2[0]  # remove batch
-        det = np.linalg.det(np.dot(J2, J2.T))
-        manipulability = np.sqrt(max(det, 0))  # prevent sqrt of negative
-        #manipulability = np.sqrt(np.linalg.det(np.dot(J2, J2.T)))
-        
-        self.manipulability_index = manipulability
-        #print(f"Manipulability index: {manipulability:.6f}")
-        #if hasattr(self, "manip_label"):
-         #   self.manip_label.text = f"Manipulability: {manipulability:.6f}"
         #print("Joint positions:", self.joint_positions)
     
-    def get_manipulability_index(self):
-        return self.manipulability_index
-    
    
-
