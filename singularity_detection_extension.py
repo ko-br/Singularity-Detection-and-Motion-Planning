@@ -22,7 +22,6 @@ from isaacsim.examples.interactive.user_examples import SingularityDetect
 
 import omni.ui as ui
 import numpy as np
-import omni.kit.app
 
 class DetectionExtension(omni.ext.IExt):
     def on_startup(self, ext_id: str):
@@ -60,26 +59,20 @@ class DetectionUI(BaseSampleUITemplate):
     def build_ui(self):
         super().build_ui()  # IMPORTANT: keeps default buttons
 
-        from omni.ui import Button
+        from omni.ui import Button, Label
 
         with self.get_extra_frames_handle():
-            with ui.CollapsableFrame(title="Commands", collapsed=False):
-                with ui.VStack(spacing=6):
-                    Button(
-                        "Get Joint Angles",
-                        clicked_fn=self.on_get_joint_angles
-                    )
+            Label("UR10 Commands")
 
-                    Button(
-                        "Get Jacobian",
-                        clicked_fn=self.on_get_jacobian
-                    )
-        with ui.CollapsableFrame(title="Robot Metrics", collapsed=False):
-            with ui.VStack(spacing=5):
-                ui.Label("Manipulability Index:", width=150)
-                self.manipulability_label = ui.Label("0.0", width=100)
-        self._update_sub = omni.kit.app.get_app().get_update_event_stream().create_subscription_to_pop(self._on_update)
+            Button(
+                "Get Joint Angles",
+                clicked_fn=self.on_get_joint_angles
+            )
 
+            Button(
+                "Get Jacobian",
+                clicked_fn=self.on_get_jacobian
+            )
 
     JOINT_NAMES = [
         "shoulder_pan_joint",
@@ -92,6 +85,7 @@ class DetectionUI(BaseSampleUITemplate):
 
     def post_load_button_event(self):
         self._build_joint_sliders()
+        self.build_ui()
 
     def _build_joint_sliders(self):
         with self.get_extra_frames_handle():
@@ -119,15 +113,15 @@ class DetectionUI(BaseSampleUITemplate):
             value_rad, dof_indices=[joint_index]
         )
 
-    def _on_update(self, event):
-        if not hasattr(self, "manipulability_label"):
+    def update(self):
+        if not hasattr(self, "_joint_labels"):
             return
 
-        if hasattr(self.sample, "manipulability_index"):
-            self.manipulability_label.text = (
-                f"Manipulability: {self.sample.manipulability_index:.6f}"
-            )   
+        if getattr(self.sample, "joint_positions", None) is None:
+            return
 
+        for i, label in enumerate(self._joint_labels):
+            label.text = f"{self.sample.joint_positions[i]:.3f} rad"
 
         # Button callbacks
     def on_get_joint_angles(self):
@@ -145,12 +139,6 @@ class DetectionUI(BaseSampleUITemplate):
         ee_idx = self.sample.ur10.get_link_indices("ee_link").list()[0]
         jac_ee = jac[:, ee_idx - 1, :, :6]
         print("Jacobian:\n", jac_ee)
-    
-    def on_shutdown(self):
-        if hasattr(self, "_update_sub"):
-            self._update_sub = None
-
-
 
 
 
